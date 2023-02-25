@@ -2,19 +2,14 @@
 import requests
 import json
 import pyspark
+from sparksession import spark
 from pyspark.sql.functions import udf, col, max as _max
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, ArrayType, MapType, BooleanType
-
-# COMMAND ----------
 
 url = 'https://pokeapi.co/api/v2/pokemon/?limit=-1'
 archive = json.loads(requests.get(url).text)['results']
 
-# COMMAND ----------
-
 df = spark.createDataFrame(archive)
-
-# COMMAND ----------
 
 sub_schema_move = MapType(StringType(), StringType())
 
@@ -74,17 +69,10 @@ default_schema = StructType(
 def get_data_default(x):
     return json.loads(requests.get(x).text)
 
-
 df = df.withColumn('pokemon_json', get_data_default(col('url'))).select('name', 'url', 'pokemon_json')
-
-# COMMAND ----------
 
 df = df.withColumn('poke_height', df.pokemon_json.getItem('height'))
 
-# COMMAND ----------
-
 height_value = df.select(_max('poke_height')).collect()[0][0]
 
-# COMMAND ----------
-
-df.where(df.poke_height == height_value).select('name', 'poke_height').display()
+df.where(df.poke_height == height_value).select('name', 'poke_height').show()
