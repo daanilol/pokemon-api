@@ -4,11 +4,7 @@ import json
 from pyspark.sql.functions import col, udf, max as _max
 from pyspark.sql.types import StructType, StructField, StringType, MapType, BooleanType, IntegerType, ArrayType
 
-# COMMAND ----------
-
 archive = json.loads(requests.get('https://pokeapi.co/api/v2/pokemon/?limit=-1').text)['results']
-
-# COMMAND ----------
 
 schema = StructType([
     StructField('name', StringType()),
@@ -16,8 +12,6 @@ schema = StructType([
 ])
 
 df_pokemon_moves = spark.createDataFrame(archive, schema)
-
-# COMMAND ----------
 
 stats_schema = ArrayType(StructType([
     StructField('base_stat', IntegerType()),
@@ -61,7 +55,6 @@ json_schema = StructType([
 def get_pokemon(x):
     return json.loads(requests.get(x).text)
 
-# COMMAND ----------
 
 @udf(returnType=ArrayType(StringType()))
 def get_moves_lvl_up(x):
@@ -71,8 +64,6 @@ def get_moves_lvl_up(x):
             if other_item['move_learn_method']['name'] == 'level-up':
                 moves_name_list.append(item['move']['name'])  
     return moves_name_list
-
-# COMMAND ----------
 
 df_pokemon_moves = df_pokemon_moves.withColumn('pokemon_json', get_pokemon(col('url')))
 df_pokemon_moves = df_pokemon_moves.withColumn('is_default', df_pokemon_moves.pokemon_json \
@@ -89,7 +80,6 @@ df_pokemon_moves = df_pokemon_moves.withColumn('stat_attack', \
 df_pokemon_moves = df_pokemon_moves.where(df_pokemon_moves.is_default == True)
 df_pokemon_moves = df_pokemon_moves.withColumn('lvl_method_moves', get_moves_lvl_up(col('moves')))
 
-# COMMAND ----------
 
 def get_most_learned_move():
     lvl_method_moves_collect = df_pokemon_moves.select('lvl_method_moves').collect()
@@ -105,9 +95,4 @@ def get_most_learned_move():
 
 most_learned_move = get_most_learned_move()
 
-# COMMAND ----------
-
-df_pokemon_moves.display()
-
-# COMMAND ----------
-
+df_pokemon_moves.show()
