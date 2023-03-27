@@ -1,8 +1,7 @@
-# Databricks notebook source
-from sparksession import spark
 import requests
 import json
 import pyspark
+from sparksession import spark
 from pyspark.sql.functions import udf, col, max as _max
 from pyspark.sql.types import StructType, StructField, StringType, MapType, IntegerType, BooleanType, ArrayType
 

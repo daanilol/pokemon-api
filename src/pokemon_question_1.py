@@ -6,10 +6,6 @@ from sparksession import spark
 from pyspark.sql.functions import udf, col, max as _max
 from pyspark.sql.types import StructType, StructField, IntegerType, StringType, ArrayType, MapType, BooleanType
 
-url = 'https://pokeapi.co/api/v2/pokemon/?limit=-1'
-archive = json.loads(requests.get(url).text)['results']
-
-df = spark.createDataFrame(archive)
 
 sub_schema_move = MapType(StringType(), StringType())
 
@@ -68,6 +64,12 @@ default_schema = StructType(
 @udf(returnType=default_schema)
 def get_data_default(x):
     return json.loads(requests.get(x).text)
+
+
+url = 'https://pokeapi.co/api/v2/pokemon/?limit=-1'
+archive = json.loads(requests.get(url).text)['results']
+
+df = spark.createDataFrame(archive)
 
 df = df.withColumn('pokemon_json', get_data_default(col('url'))).select('name', 'url', 'pokemon_json')
 

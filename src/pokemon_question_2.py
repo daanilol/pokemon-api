@@ -1,7 +1,7 @@
-from sparksession import spark
 import requests
 import json
 import pyspark
+from sparksession import spark
 from pyspark.sql.functions import col, udf, size, array
 from pyspark.sql.types import StructType, StructField, MapType, StringType, ArrayType
 
